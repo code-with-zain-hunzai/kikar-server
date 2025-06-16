@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Destination {
+  id          String         @id @default(uuid())
+  name        String
+  location    String
+  description String
+  image       String?        @db.Text
+  highlights  Json          @default("[]")
+  type        DestinationType
+  rating      Float          @default(0)
+  packages    TravelPackage[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model TravelPackage {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  price         Float
+  originalPrice Float?
+  discount      Int?
+  durationDays  Int
+  location      String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  destinationId String
+  images        Json     @default("[]")
+  rating        Float     @default(0)
+  featured      Boolean   @default(false)
+  groupSize     String
+  bestTime      String
+  difficulty    Difficulty
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Contact {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum DestinationType {
+  valley
+  peak
+  lake
+  glacier
+  cultural
+}
+
+enum Difficulty {
+  Easy
+  Moderate
+  Challenging
+  Difficult
+} 
