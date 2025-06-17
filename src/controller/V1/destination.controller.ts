@@ -67,6 +67,7 @@ export const createDestination = async (req: MulterRequest, res: Response) => {
     const response = {
       ...destination,
       image: getImageUrl(destination.image),
+      highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
     return sendSuccess(
@@ -111,6 +112,7 @@ export const updateDestination = async (req: MulterRequest, res: Response) => {
     const response = {
       ...destination,
       image: getImageUrl(destination.image),
+      highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
     return sendSuccess(res, response, "Destination updated successfully");
@@ -172,6 +174,7 @@ export const getDestinationById = async (req: Request, res: Response) => {
     const response = {
       ...destination,
       image: getImageUrl(destination.image),
+      highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
     return sendSuccess(res, response, "Destination fetched successfully");
