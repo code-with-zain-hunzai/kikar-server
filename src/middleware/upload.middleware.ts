@@ -2,20 +2,35 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-// Ensure uploads directory exists
-const uploadsDir = 'uploads/destinations';
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Ensure uploads directories exist
+const destinationsDir = 'uploads/destinations';
+const packagesDir = 'uploads/travel-packages';
 
-// Configure storage
-const storage = multer.diskStorage({
+[destinationsDir, packagesDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Configure storage for destinations
+const destinationStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    cb(null, destinationsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, `destination-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+// Configure storage for travel packages
+const packageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, packagesDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `package-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
@@ -28,9 +43,18 @@ const fileFilter = (req: any, file: any, cb: any) => {
   }
 };
 
-// Configure multer
-export const upload = multer({
-  storage: storage,
+// Configure multer for destinations
+export const uploadDestination = multer({
+  storage: destinationStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: fileFilter,
+});
+
+// Configure multer for travel packages
+export const uploadPackage = multer({
+  storage: packageStorage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
