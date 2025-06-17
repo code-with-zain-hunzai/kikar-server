@@ -5,8 +5,7 @@ import {
   UpdateDestinationData,
 } from "../../types/destination.types";
 import { sendSuccess, sendError, HttpStatus } from "../../utils/response.utils";
-import fs from 'fs';
-import path from 'path';
+import { getImageUrl, saveBase64Image, deleteImage } from "../../middleware/upload.middleware";
 
 const prisma = new PrismaClient();
 
@@ -14,34 +13,6 @@ const prisma = new PrismaClient();
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
 }
-
-// Helper function to save base64 image
-const saveBase64Image = (base64String: string): string => {
-  const uploadsDir = 'uploads/destinations';
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-
-  // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
-  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
-  const buffer = Buffer.from(base64Data, 'base64');
-  
-  // Generate unique filename
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const filename = `destination-${uniqueSuffix}.jpg`;
-  const filepath = path.join(uploadsDir, filename);
-  
-  // Save the file
-  fs.writeFileSync(filepath, buffer);
-  
-  return filename;
-};
-
-// Helper function to get full image URL
-const getImageUrl = (filename: string | null): string | null => {
-  if (!filename) return null;
-  return `${process.env.API_URL || 'http://localhost:5000'}/uploads/destinations/${filename}`;
-};
 
 export const createDestination = async (req: MulterRequest, res: Response) => {
   const body: CreateDestinationData = req.body;
@@ -53,7 +24,7 @@ export const createDestination = async (req: MulterRequest, res: Response) => {
     }
     // Handle base64 image
     else if (body.image && body.image.startsWith('data:image')) {
-      body.image = saveBase64Image(body.image);
+      body.image = saveBase64Image(body.image, 'destination');
     }
 
     const destination = await prisma.destination.create({
@@ -66,7 +37,7 @@ export const createDestination = async (req: MulterRequest, res: Response) => {
     // Add full image URL to response
     const response = {
       ...destination,
-      image: getImageUrl(destination.image),
+      image: getImageUrl(destination.image, 'destination'),
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
@@ -97,7 +68,7 @@ export const updateDestination = async (req: MulterRequest, res: Response) => {
     }
     // Handle base64 image
     else if (body.image && body.image.startsWith('data:image')) {
-      body.image = saveBase64Image(body.image);
+      body.image = saveBase64Image(body.image, 'destination');
     }
 
     const destination = await prisma.destination.update({
@@ -111,7 +82,7 @@ export const updateDestination = async (req: MulterRequest, res: Response) => {
     // Add full image URL to response
     const response = {
       ...destination,
-      image: getImageUrl(destination.image),
+      image: getImageUrl(destination.image, 'destination'),
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
@@ -141,7 +112,7 @@ export const getAllDestinations = async (_req: Request, res: Response) => {
     // Add full image URLs to response
     const response = destinations.map(destination => ({
       ...destination,
-      image: getImageUrl(destination.image),
+      image: getImageUrl(destination.image, 'destination'),
     }));
 
     return sendSuccess(res, response, "Destinations fetched successfully");
@@ -173,7 +144,7 @@ export const getDestinationById = async (req: Request, res: Response) => {
     // Add full image URL to response
     const response = {
       ...destination,
-      image: getImageUrl(destination.image),
+      image: getImageUrl(destination.image, 'destination'),
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
@@ -191,12 +162,11 @@ export const getDestinationById = async (req: Request, res: Response) => {
 export const deleteDestination = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const destination = await prisma.destination.delete({
+    const destination = await prisma.destination.findUnique({
       where: { id },
     });
-    return sendSuccess(res, null, "Destination deleted successfully");
-  } catch (error) {
-    if ((error as Error).message.includes("Record to delete does not exist")) {
+
+    if (!destination) {
       return sendError(
         res,
         "Destination not found",
@@ -204,6 +174,18 @@ export const deleteDestination = async (req: Request, res: Response) => {
         HttpStatus.NOT_FOUND
       );
     }
+
+    // Delete associated image
+    if (destination.image) {
+      deleteImage(destination.image, 'destination');
+    }
+
+    await prisma.destination.delete({
+      where: { id },
+    });
+
+    return sendSuccess(res, null, "Destination deleted successfully");
+  } catch (error) {
     return sendError(
       res,
       (error as Error).message,

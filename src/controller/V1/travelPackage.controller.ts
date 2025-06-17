@@ -5,21 +5,13 @@ import {
   UpdateTravelPackageData,
 } from '../../types/travelPackage.types';
 import { sendSuccess, sendError, HttpStatus } from '../../utils/response.utils';
-import fs from 'fs';
-import path from 'path';
-import sharp from 'sharp';
+import { getImageUrl, deleteImage } from '../../middleware/upload.middleware';
 
 // Extend Request interface to include file
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
   files?: { [fieldname: string]: Express.Multer.File[] } | Express.Multer.File[];
 }
-
-// Helper function to get full image URL
-const getImageUrl = (filename: string | null): string | null => {
-  if (!filename) return null;
-  return `${process.env.API_URL || 'http://localhost:5000'}/uploads/travel-packages/${filename}`;
-};
 
 // Get all travel packages
 export const getAllTravelPackages = async (_req: Request, res: Response) => {
@@ -28,7 +20,7 @@ export const getAllTravelPackages = async (_req: Request, res: Response) => {
     // Add full image URLs to response
     const packagesWithUrls = packages.map(pkg => ({
       ...pkg,
-      images: JSON.parse(pkg.images).map((image: string) => getImageUrl(image))
+      images: JSON.parse(pkg.images).map((image: string) => getImageUrl(image, 'package'))
     }));
     return sendSuccess(res, packagesWithUrls, 'Travel packages fetched successfully');
   } catch (error) {
@@ -54,7 +46,7 @@ export const getTravelPackageById = async (req: Request, res: Response) => {
     // Add full image URLs to response
     const packageWithUrls = {
       ...travelPackage,
-      images: JSON.parse(travelPackage.images).map((image: string) => getImageUrl(image))
+      images: JSON.parse(travelPackage.images).map((image: string) => getImageUrl(image, 'package'))
     };
     
     return sendSuccess(res, packageWithUrls, 'Travel package fetched successfully');
@@ -139,7 +131,7 @@ export const createTravelPackage = async (req: MulterRequest, res: Response) => 
           // Add full image URLs to response
           return {
             ...createdPackage,
-            images: JSON.parse(createdPackage.images).map((image: string) => getImageUrl(image))
+            images: JSON.parse(createdPackage.images).map((image: string) => getImageUrl(image, 'package'))
           };
         } catch (error) {
           console.error('Error creating package:', error);
@@ -198,7 +190,7 @@ export const updateTravelPackage = async (req: MulterRequest, res: Response) => 
     // Add full image URLs to response
     const response = {
       ...updatedPackage,
-      images: JSON.parse(updatedPackage.images).map((image: string) => getImageUrl(image))
+      images: JSON.parse(updatedPackage.images).map((image: string) => getImageUrl(image, 'package'))
     };
 
     return sendSuccess(res, response, 'Travel package updated successfully');
@@ -229,10 +221,7 @@ export const deleteTravelPackage = async (req: Request, res: Response) => {
     // Delete associated images
     const images = JSON.parse(packageToDelete.images);
     for (const image of images) {
-      const imagePath = path.join('uploads/travel-packages', image);
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
+      deleteImage(image, 'package');
     }
 
     await prisma.travelPackage.delete({

@@ -69,3 +69,38 @@ export const uploadMemory = multer({
   },
   fileFilter: fileFilter,
 });
+
+// Helper function to save base64 image
+export const saveBase64Image = (base64String: string, type: 'destination' | 'package'): string => {
+  const uploadsDir = type === 'destination' ? destinationsDir : packagesDir;
+  
+  // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+  const buffer = Buffer.from(base64Data, 'base64');
+  
+  // Generate unique filename
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  const filename = `${type}-${uniqueSuffix}.jpg`;
+  const filepath = path.join(uploadsDir, filename);
+  
+  // Save the file
+  fs.writeFileSync(filepath, buffer);
+  
+  return filename;
+};
+
+// Helper function to get full image URL
+export const getImageUrl = (filename: string | null, type: 'destination' | 'package'): string | null => {
+  if (!filename) return null;
+  const uploadsDir = type === 'destination' ? 'destinations' : 'travel-packages';
+  return `${process.env.API_URL || 'http://localhost:5000'}/uploads/${uploadsDir}/${filename}`;
+};
+
+// Helper function to delete image
+export const deleteImage = (filename: string, type: 'destination' | 'package'): void => {
+  const uploadsDir = type === 'destination' ? destinationsDir : packagesDir;
+  const filepath = path.join(uploadsDir, filename);
+  if (fs.existsSync(filepath)) {
+    fs.unlinkSync(filepath);
+  }
+};
