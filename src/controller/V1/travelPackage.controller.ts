@@ -5,15 +5,62 @@ import {
   UpdateTravelPackageData,
 } from '../../types/travelPackage.types';
 import { sendSuccess, sendError, HttpStatus } from '../../utils/response.utils';
+import fs from 'fs';
+import path from 'path';
+
+// Extend Request interface to include file
+interface MulterRequest extends Request {
+  file?: Express.Multer.File;
+}
+
+// Helper function to save base64 image
+const saveBase64Image = (base64String: string): string => {
+  const uploadsDir = 'uploads/travel-packages';
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+  const buffer = Buffer.from(base64Data, 'base64');
+  
+  // Generate unique filename
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  const filename = `package-${uniqueSuffix}.jpg`;
+  const filepath = path.join(uploadsDir, filename);
+  
+  // Save the file
+  fs.writeFileSync(filepath, buffer);
+  
+  return filename;
+};
+
+// Helper function to get full image URL
+const getImageUrl = (filename: string | null): string | null => {
+  if (!filename) return null;
+  return `${process.env.API_URL || 'http://localhost:5000'}/uploads/travel-packages/${filename}`;
+};
+
+// Helper function to validate base64 image string
+const isValidBase64Image = (str: string): boolean => {
+  try {
+    // Check if the string starts with data:image
+    if (!str.startsWith('data:image')) {
+      return false;
+    }
+    // Check if the string is a valid base64
+    const base64Regex = /^data:image\/[a-zA-Z]+;base64,/;
+    const base64Data = str.replace(base64Regex, '');
+    return Buffer.from(base64Data, 'base64').toString('base64') === base64Data;
+  } catch (error) {
+    return false;
+  }
+};
 
 // Get all travel packages
 export const getAllTravelPackages = async (_req: Request, res: Response) => {
   try {
-    const packages = await prisma.travelPackage.findMany({
-      include: {
-        destination: true
-      }
-    });
+    const packages = await prisma.travelPackage.findMany();
     return sendSuccess(res, packages, 'Travel packages fetched successfully');
   } catch (error) {
     return sendError(
@@ -30,10 +77,7 @@ export const getTravelPackageById = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
     const travelPackage = await prisma.travelPackage.findUnique({
-      where: { id },
-      include: {
-        destination: true
-      }
+      where: { id }
     });
     if (!travelPackage)
       return sendError(res, 'Travel package not found', 'Not found', HttpStatus.NOT_FOUND);
@@ -49,7 +93,7 @@ export const getTravelPackageById = async (req: Request, res: Response) => {
 };
 
 // Create multiple travel packages
-export const createTravelPackage = async (req: Request, res: Response) => {
+export const createTravelPackage = async (req: MulterRequest, res: Response) => {
   console.log('Received request body:', JSON.stringify(req.body, null, 2));
   
   if (!req.body) {
@@ -77,12 +121,44 @@ export const createTravelPackage = async (req: Request, res: Response) => {
           HttpStatus.BAD_REQUEST
         );
       }
+
+      // Handle images
+      if (packageData.images && Array.isArray(packageData.images)) {
+        const savedImages = [];
+        for (const image of packageData.images) {
+          if (typeof image === 'string' && image.startsWith('data:image')) {
+            if (!isValidBase64Image(image)) {
+              return sendError(
+                res,
+                'Invalid image format. Images must be provided as base64 strings starting with data:image/',
+                'Validation error',
+                HttpStatus.BAD_REQUEST
+              );
+            }
+            savedImages.push(saveBase64Image(image));
+          } else if (typeof image === 'string') {
+            savedImages.push(image);
+          }
+        }
+        packageData.images = savedImages;
+      }
     }
 
     const createdPackages = await Promise.all(
       packagesData.map(async (packageData) => {
         try {
-          return await prisma.travelPackage.create({
+          // Check if package with same destination already exists
+          const existingPackage = await prisma.travelPackage.findFirst({
+            where: {
+              destination: packageData.destination
+            }
+          });
+
+          if (existingPackage) {
+            throw new Error(`A package for destination "${packageData.destination}" already exists`);
+          }
+
+          const createdPackage = await prisma.travelPackage.create({
             data: {
               title: packageData.title,
               description: packageData.description,
@@ -91,18 +167,21 @@ export const createTravelPackage = async (req: Request, res: Response) => {
               discount: packageData.discount ? Number(packageData.discount) : undefined,
               durationDays: Number(packageData.durationDays),
               location: packageData.location,
-              destinationId: packageData.destination,
-              images: packageData.images || [],
+              destination: packageData.destination,
+              images: Array.isArray(packageData.images) ? JSON.stringify(packageData.images) : packageData.images || '[]',
               rating: Number(packageData.rating || 0),
               featured: packageData.featured || false,
               groupSize: packageData.groupSize,
               bestTime: packageData.bestTime,
               difficulty: packageData.difficulty
-            },
-            include: {
-              destination: true
             }
           });
+
+          // Add full image URLs to response
+          return {
+            ...createdPackage,
+            images: JSON.parse(createdPackage.images).map((image: string) => getImageUrl(image))
+          };
         } catch (error) {
           console.error('Error creating package:', error);
           throw error;
@@ -128,11 +207,32 @@ export const createTravelPackage = async (req: Request, res: Response) => {
 };
 
 // Update multiple travel packages
-export const updateTravelPackage = async (req: Request, res: Response) => {
+export const updateTravelPackage = async (req: MulterRequest, res: Response) => {
   const { id } = req.params;
   const updateData: UpdateTravelPackageData = req.body;
 
   try {
+    // Handle images
+    if (updateData.images && Array.isArray(updateData.images)) {
+      const savedImages = [];
+      for (const image of updateData.images) {
+        if (typeof image === 'string' && image.startsWith('data:image')) {
+          if (!isValidBase64Image(image)) {
+            return sendError(
+              res,
+              'Invalid image format. Images must be provided as base64 strings starting with data:image/',
+              'Validation error',
+              HttpStatus.BAD_REQUEST
+            );
+          }
+          savedImages.push(saveBase64Image(image));
+        } else if (typeof image === 'string') {
+          savedImages.push(image);
+        }
+      }
+      updateData.images = savedImages;
+    }
+
     const updatedPackage = await prisma.travelPackage.update({
       where: { id },
       data: {
@@ -143,20 +243,23 @@ export const updateTravelPackage = async (req: Request, res: Response) => {
         discount: updateData.discount ? Number(updateData.discount) : undefined,
         durationDays: updateData.durationDays ? Number(updateData.durationDays) : undefined,
         location: updateData.location,
-        destinationId: updateData.destination,
-        images: updateData.images,
+        destination: updateData.destination,
+        images: Array.isArray(updateData.images) ? JSON.stringify(updateData.images) : updateData.images,
         rating: updateData.rating ? Number(updateData.rating) : undefined,
         featured: updateData.featured,
         groupSize: updateData.groupSize,
         bestTime: updateData.bestTime,
         difficulty: updateData.difficulty
-      },
-      include: {
-        destination: true
       }
     });
 
-    return sendSuccess(res, updatedPackage, 'Travel package updated successfully');
+    // Add full image URLs to response
+    const response = {
+      ...updatedPackage,
+      images: JSON.parse(updatedPackage.images).map((image: string) => getImageUrl(image))
+    };
+
+    return sendSuccess(res, response, 'Travel package updated successfully');
   } catch (error) {
     console.error('Update travel package error:', error);
     return sendError(

@@ -11,7 +11,7 @@ export const createTravelPackageSchema = z.object({
   durationDays: z.number().min(1, 'Duration must be at least 1 day'),
   location: z.string().min(1, 'Location is required'),
   destinationId: z.string().uuid('Invalid destination ID'),
-  images: z.array(z.string()).min(1, 'At least one image is required'),
+  images: z.array(z.string()).optional(),
   rating: z.number().min(0).max(5).default(0),
   featured: z.boolean().default(false),
   groupSize: z.string().min(1, 'Group size is required'),

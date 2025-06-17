@@ -21,14 +21,13 @@ model Admin {
 
 model Destination {
   id          String         @id @default(uuid())
-  name        String
+  name        String         @unique
   location    String
   description String
   image       String?        @db.Text
   highlights  Json          @default("[]")
   type        DestinationType
   rating      Float          @default(0)
-  packages    TravelPackage[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
@@ -42,9 +41,8 @@ model TravelPackage {
   discount      Int?
   durationDays  Int
   location      String
-  destination   Destination @relation(fields: [destinationId], references: [id])
-  destinationId String
-  images        Json     @default("[]")
+  destination   String
+  images        String    @db.Text
   rating        Float     @default(0)
   featured      Boolean   @default(false)
   groupSize     String

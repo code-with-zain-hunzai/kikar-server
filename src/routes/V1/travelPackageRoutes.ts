@@ -11,22 +11,19 @@ const router = express.Router();
 
 // Debug middleware for this router
 router.use((req, res, next) => {
-  console.log('Travel Package Route:', req.method, req.path);
+  console.log('Travel Package Route:', req.method, req.originalUrl);
+  console.log('Request Body:', req.body);
   next();
 });
 
 // Base routes
-router
-  .route("/packages")
-  .get(getAllTravelPackages)
-  .post(createTravelPackage);
+router.get("/packages", getAllTravelPackages);
+router.post("/packages", createTravelPackage);
 
 // ID specific routes
-router
-  .route("/packages/:id")
-  .get(getTravelPackageById)
-  .put(updateTravelPackage)
-  .delete(deleteTravelPackage);
+router.get("/packages/:id", getTravelPackageById);
+router.put("/packages/:id", updateTravelPackage);
+router.delete("/packages/:id", deleteTravelPackage);
 
 // Additional routes
 router.get("/packages/search", getAllTravelPackages);
