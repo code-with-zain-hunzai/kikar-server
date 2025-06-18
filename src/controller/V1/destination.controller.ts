@@ -5,7 +5,6 @@ import {
   UpdateDestinationData,
 } from "../../types/destination.types";
 import { sendSuccess, sendError, HttpStatus } from "../../utils/response.utils";
-import { getImageUrl, saveBase64Image, deleteImage } from "../../middleware/upload.middleware";
 
 const prisma = new PrismaClient();
 
@@ -18,26 +17,21 @@ export const createDestination = async (req: MulterRequest, res: Response) => {
   const body: CreateDestinationData = req.body;
 
   try {
-    // Handle file upload
-    if (req.file) {
-      body.image = req.file.filename;
-    }
-    // Handle base64 image
-    else if (body.image && body.image.startsWith('data:image')) {
-      body.image = saveBase64Image(body.image, 'destination');
-    }
+    // Store the Cloudinary URL directly
+    const image = body.image || null;
 
     const destination = await prisma.destination.create({
       data: {
         ...body,
+        image,
         highlights: body.highlights ? JSON.stringify(body.highlights) : "[]",
       },
     });
 
-    // Add full image URL to response
+    // Return the destination with the original Cloudinary URL
     const response = {
       ...destination,
-      image: getImageUrl(destination.image, 'destination'),
+      image: destination.image,
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
@@ -62,27 +56,22 @@ export const updateDestination = async (req: MulterRequest, res: Response) => {
   const body: UpdateDestinationData = req.body;
 
   try {
-    // Handle file upload
-    if (req.file) {
-      body.image = req.file.filename;
-    }
-    // Handle base64 image
-    else if (body.image && body.image.startsWith('data:image')) {
-      body.image = saveBase64Image(body.image, 'destination');
-    }
+    // Use the Cloudinary URL directly from the request
+    const image = body.image || undefined;
 
     const destination = await prisma.destination.update({
       where: { id },
       data: {
         ...body,
+        image,
         highlights: body.highlights ? JSON.stringify(body.highlights) : undefined,
       },
     });
 
-    // Add full image URL to response
+    // Return the destination with the original Cloudinary URL
     const response = {
       ...destination,
-      image: getImageUrl(destination.image, 'destination'),
+      image: destination.image,
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
@@ -109,10 +98,11 @@ export const getAllDestinations = async (_req: Request, res: Response) => {
   try {
     const destinations = await prisma.destination.findMany();
     
-    // Add full image URLs to response
+    // Return the destinations with their original Cloudinary URLs
     const response = destinations.map(destination => ({
       ...destination,
-      image: getImageUrl(destination.image, 'destination'),
+      image: destination.image,
+      highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     }));
 
     return sendSuccess(res, response, "Destinations fetched successfully");
@@ -141,10 +131,10 @@ export const getDestinationById = async (req: Request, res: Response) => {
       );
     }
 
-    // Add full image URL to response
+    // Return the destination with its original Cloudinary URL
     const response = {
       ...destination,
-      image: getImageUrl(destination.image, 'destination'),
+      image: destination.image,
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights
     };
 
@@ -173,11 +163,6 @@ export const deleteDestination = async (req: Request, res: Response) => {
         "Destination not found",
         HttpStatus.NOT_FOUND
       );
-    }
-
-    // Delete associated image
-    if (destination.image) {
-      deleteImage(destination.image, 'destination');
     }
 
     await prisma.destination.delete({

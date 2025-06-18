@@ -17,10 +17,10 @@ interface MulterRequest extends Request {
 export const getAllTravelPackages = async (_req: Request, res: Response) => {
   try {
     const packages = await prisma.travelPackage.findMany();
-    // Add full image URLs to response
+    // Return the packages with their original Cloudinary URLs
     const packagesWithUrls = packages.map(pkg => ({
       ...pkg,
-      images: JSON.parse(pkg.images).map((image: string) => getImageUrl(image, 'package'))
+      images: JSON.parse(pkg.images)
     }));
     return sendSuccess(res, packagesWithUrls, 'Travel packages fetched successfully');
   } catch (error) {
@@ -43,10 +43,10 @@ export const getTravelPackageById = async (req: Request, res: Response) => {
     if (!travelPackage)
       return sendError(res, 'Travel package not found', 'Not found', HttpStatus.NOT_FOUND);
     
-    // Add full image URLs to response
+    // Return the package with its original Cloudinary URLs
     const packageWithUrls = {
       ...travelPackage,
-      images: JSON.parse(travelPackage.images).map((image: string) => getImageUrl(image, 'package'))
+      images: JSON.parse(travelPackage.images)
     };
     
     return sendSuccess(res, packageWithUrls, 'Travel package fetched successfully');
@@ -105,9 +105,8 @@ export const createTravelPackage = async (req: MulterRequest, res: Response) => 
             throw new Error(`A package for destination "${packageData.destination}" already exists`);
           }
 
-          // Handle uploaded files
-          const files = req.files as Express.Multer.File[];
-          const images = files ? files.map(file => file.filename) : [];
+          // Store the Cloudinary URLs directly
+          const images = packageData.images || [];
 
           const createdPackage = await prisma.travelPackage.create({
             data: {
@@ -128,10 +127,10 @@ export const createTravelPackage = async (req: MulterRequest, res: Response) => 
             }
           });
 
-          // Add full image URLs to response
+          // Return the package with the original Cloudinary URLs
           return {
             ...createdPackage,
-            images: JSON.parse(createdPackage.images).map((image: string) => getImageUrl(image, 'package'))
+            images: JSON.parse(createdPackage.images)
           };
         } catch (error) {
           console.error('Error creating package:', error);
@@ -163,9 +162,8 @@ export const updateTravelPackage = async (req: MulterRequest, res: Response) => 
   const updateData: UpdateTravelPackageData = req.body;
 
   try {
-    // Handle uploaded files
-    const files = req.files as Express.Multer.File[];
-    const images = files ? files.map(file => file.filename) : [];
+    // Use the Cloudinary URLs directly from the request
+    const images = updateData.images || [];
 
     const updatedPackage = await prisma.travelPackage.update({
       where: { id },
@@ -187,10 +185,10 @@ export const updateTravelPackage = async (req: MulterRequest, res: Response) => 
       }
     });
 
-    // Add full image URLs to response
+    // Return the package with its original Cloudinary URLs
     const response = {
       ...updatedPackage,
-      images: JSON.parse(updatedPackage.images).map((image: string) => getImageUrl(image, 'package'))
+      images: JSON.parse(updatedPackage.images)
     };
 
     return sendSuccess(res, response, 'Travel package updated successfully');

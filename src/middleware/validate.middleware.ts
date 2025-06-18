@@ -1,17 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject } from 'zod';
+import { z } from 'zod';
 
-export const validate = (schema: AnyZodObject) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+export const validate =
+  (schema: z.ZodSchema) =>
+  (req: Request, res: Response, next: NextFunction) => {
     try {
-      await schema.parseAsync({
-        body: req.body,
-        query: req.query,
-        params: req.params,
-      });
+      schema.parse(req.body);
       next();
     } catch (error) {
-      res.status(400).json({ error: error });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      return res.status(400).json({ message: 'Invalid request data' });
     }
   };
-};

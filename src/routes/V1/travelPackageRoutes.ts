@@ -6,7 +6,6 @@ import {
   updateTravelPackage,
   deleteTravelPackage,
 } from '../../controller/V1/travelPackage.controller';
-import { uploadPackage } from '../../middleware/upload.middleware';
 
 const router = express.Router();
 
@@ -20,8 +19,8 @@ router.use((req, res, next) => {
 // Base routes
 router.get('/packages', getAllTravelPackages);
 router.get('/packages/:id', getTravelPackageById);
-router.post('/packages', uploadPackage.array('images', 5), createTravelPackage);
-router.put('/packages/:id', uploadPackage.array('images', 5), updateTravelPackage);
+router.post('/packages', createTravelPackage);
+router.put('/packages/:id', updateTravelPackage);
 router.delete('/packages/:id', deleteTravelPackage);
 
 // Additional routes
