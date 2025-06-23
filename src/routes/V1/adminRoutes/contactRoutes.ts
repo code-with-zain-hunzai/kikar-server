@@ -2,7 +2,7 @@ import express from "express";
 import {
   submitContactForm,
   getAllContacts,
-} from "../../controller/V1/contactController";
+} from "../../../controller/V1/dashboardControllers/contactController";
 const router = express.Router();
 
 router.post("/contact", submitContactForm);

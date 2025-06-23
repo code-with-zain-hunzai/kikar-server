@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import prisma from '../../lib/prisma';
+import prisma from '../../../lib/prisma';
 import {
   CreateTravelPackageData,
   UpdateTravelPackageData,
-} from '../../types/travelPackage.types';
-import { sendSuccess, sendError, HttpStatus } from '../../utils/response.utils';
-import { getImageUrl, deleteImage } from '../../middleware/upload.middleware';
+} from '../../../types/travelPackage.types';
+import { sendSuccess, sendError, HttpStatus } from '../../../utils/response.utils';
+import { getImageUrl, deleteImage } from '../../../middleware/upload.middleware';
 
 // Extend Request interface to include file
 interface MulterRequest extends Request {

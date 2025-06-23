@@ -2,10 +2,13 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
-import contactRouter from "./routes/V1/contactRoutes";
-import destinationRoutes from "./routes/V1/destinationRoutes";
-import travelPackageRoutes from "./routes/V1/travelPackageRoutes";
-import adminRoutes from "./routes/V1/adminRoutes"
+import contactRouter from "./routes/V1/adminRoutes/contactRoutes";
+import destinationRoutes from "./routes/V1/adminRoutes/destinationRoutes";
+import travelPackageRoutes from "./routes/V1/adminRoutes/travelPackageRoutes";
+import adminRoutes from "./routes/V1/adminRoutes/adminRoutes"
+import signInRoutes from "./routes/V1/usersRoutes/signInRoutes";
+import registerRoutes from "./routes/V1/usersRoutes/registerRoutes";
+import profileRoutes from "./routes/V1/usersRoutes/profileRoutes";
 
 dotenv.config();
 
@@ -37,5 +40,8 @@ app.use("/V1", contactRouter);
 app.use("/V1/destinations", destinationRoutes);
 app.use("/V1", travelPackageRoutes);
 app.use("/V1", adminRoutes);
+app.use("/V1", signInRoutes);
+app.use("/V1", registerRoutes);
+app.use("/V1/profiles", profileRoutes);
 
 export default app;

@@ -3,8 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import {
   CreateDestinationData,
   UpdateDestinationData,
-} from "../../types/destination.types";
-import { sendSuccess, sendError, HttpStatus } from "../../utils/response.utils";
+} from "../../../types/destination.types";
+import { sendSuccess, sendError, HttpStatus } from "../../../utils/response.utils";
 
 const prisma = new PrismaClient();
 

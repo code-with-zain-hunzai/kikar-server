@@ -62,6 +62,108 @@ model Contact {
   updatedAt DateTime @updatedAt
 }
 
+model Guide {
+  id              String   @id @default(uuid())
+  name       String
+  password        String   // Added password field
+  email           String   @unique
+  phone           String
+  location        String
+  experience      String
+  languages       Json     // Array of strings
+  certifications  String?  // Optional
+  tourTypes       Json     // Array of strings
+  specialties     String?  // Optional
+  maxGroupSize    String
+  hourlyRate      String
+  dailyRate       String
+  availability    Json     // Array of strings
+  bio             String?  // Optional
+  idCardFront     String?  // Optional
+  idCardBack      String?  // Optional
+  role            String   @default("guide")
+  profileImage    String?  // Optional profile image
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Hotel {
+  id                 String   @id @default(uuid())
+  name               String
+  hotelName          String
+  password        String   // Added password field
+  hotelType          String
+  starRating         String
+  email              String   @unique
+  phone              String
+  certificateCountry String
+  certificateFile    String?  // Optional
+  cnicFront          String?  // Optional
+  cnicBack           String?  // Optional
+  address            String
+  city               String
+  state              String
+  zipCode            String
+  country            String
+  description        String
+  amenities          Json     // Array of strings
+  services           Json     // Array of strings
+  totalRooms         String
+  roomTypes          Json     // Array of strings
+  basePrice          String
+  currency           String
+  policies           String
+  role               String   @default("hotel")
+  profileImage       String?  // Optional profile image
+  gallery            Json?    // Up to 8 items (photo or video URLs)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Tourist {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  phone      String
+  country    String?
+  cnicFront  String?  // Optional
+  cnicBack   String?  // Optional
+  travelStyle String? // Optional
+  interests  Json?    // Array of strings
+  budget     String?
+  frequency  String?
+  groupSize  String?
+  role       String   @default("tourist")
+  profileImage String? // Optional profile image
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  password   String   // Added password field
+}
+
+model Transporter {
+  id              String   @id @default(uuid())
+  businessName    String?   //Optional
+  name            String   
+  email           String   @unique
+  phone           String
+  serviceArea     String?   // Optional
+  vehicleTypes    Json?   // Array of strings
+  serviceTypes    Json?    // Array of strings
+  fleetSize       String?   // Optional
+  maxCapacity     String?   // Optional
+  businessLicense String?   // Optional
+  driverLicense   String
+  insurance       String?   // Optional
+  certifications  String?  // Optional
+  cnicFront       String?  // Optional
+  cnicBack        String?  // Optional
+  role            String   @default("transporter")
+  profileImage    String?  // Optional profile image
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  password        String   // Added password field
+}
+
 enum DestinationType {
   valley
   peak

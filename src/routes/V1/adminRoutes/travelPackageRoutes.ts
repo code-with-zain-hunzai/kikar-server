@@ -5,7 +5,7 @@ import {
   createTravelPackage,
   updateTravelPackage,
   deleteTravelPackage,
-} from '../../controller/V1/travelPackage.controller';
+} from '../../../controller/V1/dashboardControllers/travelPackage.controller';
 
 const router = express.Router();
 

@@ -1,11 +1,11 @@
 // src/controllers/admin.controller.ts
 import { Request, Response } from 'express';
-import { LoginAdminRequest } from '../../types/admin.types';
-import { prisma } from '../../config/db';
+import { LoginAdminRequest } from '../../../types/admin.types';
+import { prisma } from '../../../config/db';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../../config/jwt';
+import { JWT_SECRET } from '../../../config/jwt';
 import bcrypt from 'bcryptjs';
-import { HttpStatus, ApiResponse } from '../../types/api.types';
+import { HttpStatus, ApiResponse } from '../../../types/api.types';
 
 export const loginAdmin = async (req: LoginAdminRequest, res: Response): Promise<void> => {
   const { email, password } = req.body;
@@ -40,7 +40,11 @@ export const loginAdmin = async (req: LoginAdminRequest, res: Response): Promise
       return;
     }
 
-    const token = jwt.sign({ id: admin.id }, JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign(
+      { id: admin.id, role: admin.role },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: '24h' }
+    );
     console.log('Login successful, token generated');
 
     res.status(HttpStatus.OK).json({

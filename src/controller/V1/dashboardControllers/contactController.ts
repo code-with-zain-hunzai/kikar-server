@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../../config/db";
-import { ApiResponse, HttpStatus } from "../../types/api.types";
+import { prisma } from "../../../config/db";
+import { ApiResponse, HttpStatus } from "../../../types/api.types";
 
 export const submitContactForm = async (
   req: Request,
