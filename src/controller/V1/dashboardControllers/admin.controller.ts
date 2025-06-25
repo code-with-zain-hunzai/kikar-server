@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import { LoginAdminRequest } from '../../../types/admin.types';
 import { prisma } from '../../../config/db';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../../../config/jwt';
 import bcrypt from 'bcryptjs';
 import { HttpStatus, ApiResponse } from '../../../types/api.types';
 

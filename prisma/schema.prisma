@@ -72,12 +72,12 @@ model Guide {
   experience      String
   languages       Json     // Array of strings
   certifications  String?  // Optional
-  tourTypes       Json     // Array of strings
+  tourTypes       Json?     // Optional  Array of strings
   specialties     String?  // Optional
-  maxGroupSize    String
-  hourlyRate      String
-  dailyRate       String
-  availability    Json     // Array of strings
+  maxGroupSize    String?
+  hourlyRate      String?
+  dailyRate       String?
+  availability    Json?     // Array of strings
   bio             String?  // Optional
   idCardFront     String?  // Optional
   idCardBack      String?  // Optional
@@ -89,30 +89,28 @@ model Guide {
 
 model Hotel {
   id                 String   @id @default(uuid())
-  name               String
   hotelName          String
-  password        String   // Added password field
+  password           String   // Added password field
   hotelType          String
   starRating         String
   email              String   @unique
   phone              String
-  certificateCountry String
   certificateFile    String?  // Optional
   cnicFront          String?  // Optional
   cnicBack           String?  // Optional
-  address            String
-  city               String
-  state              String
-  zipCode            String
+  address            String?  // Optional
+  city               String?  // Optional
+  state              String?
+  zipCode            String?
   country            String
-  description        String
-  amenities          Json     // Array of strings
-  services           Json     // Array of strings
-  totalRooms         String
-  roomTypes          Json     // Array of strings
-  basePrice          String
-  currency           String
-  policies           String
+  description        String?
+  amenities          Json?     // Array of strings
+  services           Json?     // Array of strings
+  totalRooms         String?
+  roomTypes          Json?     // Array of strings
+  basePrice          String?
+  currency           String?
+  policies           String?
   role               String   @default("hotel")
   profileImage       String?  // Optional profile image
   gallery            Json?    // Up to 8 items (photo or video URLs)

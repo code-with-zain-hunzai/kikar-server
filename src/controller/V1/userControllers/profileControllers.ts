@@ -42,6 +42,8 @@ export const getProfiles = async (req: AuthenticatedRequest, res: Response): Pro
       }
     }
 
+    console.log('Other profiles:', profiles);
+
     return sendSuccess(res, {
       profiles,
       pagination: {
@@ -70,8 +72,7 @@ async function fetchProfilesByType(type: string, skip: number, limit: number, ci
         select: {
           id: true,
           email: true,
-          firstName: true,
-          lastName: true,
+          name: true,
           phone: true,
           createdAt: true,
         },
@@ -89,8 +90,7 @@ async function fetchProfilesByType(type: string, skip: number, limit: number, ci
         select: {
           id: true,
           email: true,
-          firstName: true,
-          lastName: true,
+          name:true,
           phone: true,
           experience: true,
           languages: true,
@@ -164,8 +164,7 @@ export const getProfileById = async (req: AuthenticatedRequest, res: Response): 
           select: {
             id: true,
             email: true,
-            firstName: true,
-            lastName: true,
+           name:true,
             phone: true
           },
         });
@@ -177,8 +176,7 @@ export const getProfileById = async (req: AuthenticatedRequest, res: Response): 
           select: {
             id: true,
             email: true,
-            firstName: true,
-            lastName: true,
+            name:true,
             phone: true,
             experience: true,
             languages: true,
@@ -210,6 +208,7 @@ export const getProfileById = async (req: AuthenticatedRequest, res: Response): 
           where: { id },
           select: {
             id: true,
+            name:true,
             email: true,
             businessName: true,
             phone: true,

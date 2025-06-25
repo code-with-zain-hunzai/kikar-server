@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../../../config/db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '../../../config/jwt';
+import { JWT_SECRET_USERS } from '../../../config/jwt';
 import { sendSuccess, sendError, HttpStatus } from '../../../utils/response.utils';
 import { jwtDecode } from "jwt-decode";
 
@@ -51,7 +51,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const { password: _password, ...userWithoutPassword } = user;
 
     // Generate JWT
-    const token = jwt.sign({ id: user.id, role: userType }, JWT_SECRET || "your-secret-key", { expiresIn: '1d' });
+    const token = jwt.sign({ id: user.id, role: userType }, JWT_SECRET_USERS || "your-secret-key", { expiresIn: '1d' });
     console.log(token)
     console.log('JWT Token:', token);
 
@@ -158,6 +158,16 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         },
       });
     }
+
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    res.cookie('accessToken', token, {
+      httpOnly: true,
+      secure: isProduction,   // false in dev, true in prod
+      sameSite: 'lax',        // 'lax' is best for most cases in dev and prod
+      path: '/',              // always set path to root
+      maxAge: 24 * 60 * 60 * 1000
+    });
 
     return sendSuccess(res, {
       accessToken: token,

@@ -6,7 +6,6 @@ const router = express.Router();
 
 router.get("/", auth, getProfiles);
 
-// Get specific profile by type and ID
 router.get("/:type/:id", auth, getProfileById);
 
 export default router;

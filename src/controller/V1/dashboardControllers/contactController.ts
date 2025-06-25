@@ -9,8 +9,6 @@ export const submitContactForm = async (
   try {
     console.log('Received contact form data:', req.body);
     const { fullName, email, phone, message, destination, travelType } = req.body;
-    
-    // Check if email or phone already exists
     const existingContact = await prisma.contact.findFirst({
       where: {
         OR: [
