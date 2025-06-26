@@ -18,14 +18,17 @@ declare global {
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    console.log('Cookies:', req.cookies);
     const token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
+    console.log('Token:', token);
 
     if (!token) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({
+      res.status(HttpStatus.UNAUTHORIZED).json({
         success: false,
         message: "Authentication required",
         error: "No token provided"
       } as ApiResponse);
+      return;
     }
 
     const decoded = jwt.verify(
@@ -33,31 +36,39 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       process.env.JWT_SECRET || "your-secret-key"
     ) as JwtPayload;
 
-    const admin = await prisma.admin.findUnique({
-      where: { id: decoded.id },
-      select: {
-        id: true,
-        email: true,
-        role: true
-      }
-    });
+    const { id, role } = decoded;
+    let user = null;
 
-    if (!admin) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({
+    if (role === 'tourist') {
+      user = await prisma.tourist.findUnique({ where: { id } });
+    } else if (role === 'guide') {
+      user = await prisma.guide.findUnique({ where: { id } });
+    } else if (role === 'hotel') {
+      user = await prisma.hotel.findUnique({ where: { id } });
+    } else if (role === 'transporter') {
+      user = await prisma.transporter.findUnique({ where: { id } });
+    } else if (role === 'admin') {
+      user = await prisma.admin.findUnique({ where: { id } });
+    }
+
+    if (!user) {
+      res.status(HttpStatus.UNAUTHORIZED).json({
         success: false,
         message: "User not found",
         error: "Invalid token"
       } as ApiResponse);
+      return;
     }
 
-    req.user = admin;
+    req.user = { ...user, role };
     next();
   } catch (error) {
-    return res.status(HttpStatus.UNAUTHORIZED).json({
+    res.status(HttpStatus.UNAUTHORIZED).json({
       success: false,
       message: "Invalid token",
       error: "Authentication failed"
     } as ApiResponse);
+    return;
   }
 };
 
