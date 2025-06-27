@@ -15,7 +15,6 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration
 app.use(
   cors({
     origin: ["https://kikar.vercel.app", "http://localhost:3000"],
@@ -26,9 +25,6 @@ app.use(
     maxAge: 86400
   })
 );
-
-// Serve static files from the uploads directory
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
