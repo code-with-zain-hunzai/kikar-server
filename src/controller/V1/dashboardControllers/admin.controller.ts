@@ -26,6 +26,17 @@ export const loginAdmin = async (req: LoginAdminRequest, res: Response): Promise
       return;
     }
 
+    // Check if admin role exists
+    if (!admin.role) {
+      console.log('Error: Admin role is missing');
+      res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message: 'Admin role is missing',
+        error: 'Admin role is missing'
+      } as ApiResponse);
+      return;
+    }
+
     const isMatch = await bcrypt.compare(password, admin.password);
     console.log('Password match:', isMatch ? 'Yes' : 'No');
 

@@ -350,7 +350,7 @@ export const deleteOwnProfile = async (req: AuthenticatedRequest, res: Response)
       case 'transporter':
         deletedProfile = await prisma.transporter.delete({ where: { id: userId } });
         break;
-      default:
+      default:  
         return sendError(res, 'Invalid role', 'Invalid user role', HttpStatus.BAD_REQUEST);
     }
     return sendSuccess(res, null, 'Profile deleted successfully');

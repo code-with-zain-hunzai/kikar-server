@@ -1,15 +1,17 @@
 import express from "express";
 import { getProfiles, getProfileById, getOwnProfile, updateOwnProfile, deleteOwnProfile } from "../../../controller/V1/userControllers/profileControllers";
-import { auth } from "../../../middleware/authMiddleware";
+import { auth, checkRole } from "../../../middleware/authMiddleware";
 
 const router = express.Router();
 
-router.get("/", auth, getProfiles);
+const allowedRoles = ['tourist', 'guide', 'hotel', 'transporter'];
 
-router.get("/:type/:id", auth, getProfileById);
+router.get("/", auth, checkRole(allowedRoles), getProfiles);
 
-router.get("/me", auth, getOwnProfile);
-router.put("/me", auth, updateOwnProfile);
-router.delete("/me", auth, deleteOwnProfile);
+router.get("/:type/:id", auth, checkRole(allowedRoles), getProfileById);
+
+router.get("/me", auth, checkRole(allowedRoles), getOwnProfile);
+router.put("/me", auth, checkRole(allowedRoles), updateOwnProfile);
+router.delete("/me", auth, checkRole(allowedRoles), deleteOwnProfile);
 
 export default router;
