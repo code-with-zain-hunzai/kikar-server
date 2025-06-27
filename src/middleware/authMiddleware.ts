@@ -94,4 +94,45 @@ export const checkRole = (roles: string[]) => {
 
     next();
   };
+};
+
+export const adminAuth = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.cookies.adminAccessToken || req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      res.status(HttpStatus.UNAUTHORIZED).json({
+        success: false,
+        message: "Authentication required",
+        error: "No token provided"
+      } as ApiResponse);
+      return;
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key") as JwtPayload;
+    if (decoded.role !== 'admin') {
+      res.status(HttpStatus.FORBIDDEN).json({
+        success: false,
+        message: "Access denied",
+        error: "Not an admin"
+      } as ApiResponse);
+      return;
+    }
+    const user = await prisma.admin.findUnique({ where: { id: decoded.id } });
+    if (!user) {
+      res.status(HttpStatus.UNAUTHORIZED).json({
+        success: false,
+        message: "User not found",
+        error: "Invalid token"
+      } as ApiResponse);
+      return;
+    }
+    req.user = { ...user, role: decoded.role };
+    next();
+  } catch (error) {
+    res.status(HttpStatus.UNAUTHORIZED).json({
+      success: false,
+      message: "Invalid token",
+      error: "Authentication failed"
+    } as ApiResponse);
+    return;
+  }
 }; 

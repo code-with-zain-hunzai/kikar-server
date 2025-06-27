@@ -57,11 +57,18 @@ export const loginAdmin = async (req: LoginAdminRequest, res: Response): Promise
     );
     console.log('Login successful, token generated');
 
+    res.cookie('adminAccessToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/', 
+    });
     res.status(HttpStatus.OK).json({
       success: true,
       message: 'Login successful',
       data: {
-        accessToken: token,
+        accessToken:token,
         user: {
           id: admin.id,
           email: admin.email,
@@ -77,4 +84,9 @@ export const loginAdmin = async (req: LoginAdminRequest, res: Response): Promise
       error: 'Internal server error'
     } as ApiResponse);
   }
+};
+
+export const logoutAdmin = async (req: Request, res: Response): Promise<void> => {
+  res.clearCookie('adminAccessToken');
+  res.status(200).json({ success: true, message: 'Admin logout successful' });
 };
