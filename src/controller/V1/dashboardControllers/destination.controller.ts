@@ -99,7 +99,7 @@ export const getAllDestinations = async (_req: Request, res: Response) => {
     const destinations = await prisma.destination.findMany();
     
     // Return the destinations with their original Cloudinary URLs
-    const response = destinations.map(destination => ({
+    const response = destinations.map((destination: any) => ({
       ...destination,
       image: destination.image,
       highlights: typeof destination.highlights === 'string' ? JSON.parse(destination.highlights) : destination.highlights

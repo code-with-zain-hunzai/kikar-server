@@ -18,7 +18,7 @@ export const getAllTravelPackages = async (_req: Request, res: Response) => {
   try {
     const packages = await prisma.travelPackage.findMany();
     // Return the packages with their original Cloudinary URLs
-    const packagesWithUrls = packages.map(pkg => ({
+    const packagesWithUrls = packages.map((pkg: any) => ({
       ...pkg,
       images: JSON.parse(pkg.images)
     }));
@@ -163,7 +163,7 @@ export const updateTravelPackage = async (req: MulterRequest, res: Response) => 
 
   try {
     // Use the Cloudinary URLs directly from the request
-    const images = updateData.images || [];
+    const images = Array.isArray(updateData.images) ? updateData.images : [];
 
     const updatedPackage = await prisma.travelPackage.update({
       where: { id },

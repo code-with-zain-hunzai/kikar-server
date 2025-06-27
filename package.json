@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@types/connect": "^3.4.38",
+    "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
     "@types/estree": "^1.0.8",
     "@types/express": "^5.0.3",

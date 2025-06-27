@@ -6,11 +6,12 @@ export const validate =
   (req: Request, res: Response, next: NextFunction) => {
     try {
       schema.parse(req.body);
-      next();
+      return next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
+        res.status(400).json({ message: error.errors[0].message });
+        return;
       }
-      return res.status(400).json({ message: 'Invalid request data' });
+      res.status(400).json({ message: 'Invalid request data' });
     }
   };
