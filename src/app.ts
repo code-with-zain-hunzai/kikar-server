@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
 import cookieParser from "cookie-parser";
 import contactRouter from "./routes/V1/adminRoutes/contactRoutes";
 import destinationRoutes from "./routes/V1/adminRoutes/destinationRoutes";
@@ -26,13 +25,17 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// app.use(express.json({ limit: '10mb' }));
+// app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Contact Form API");
 });
+
+app.get("/hello",(req,res)=>{
+  res.send("Welcome to the hello routes")
+})
 
 app.use("/V1", contactRouter);
 app.use("/V1/destinations", destinationRoutes);
