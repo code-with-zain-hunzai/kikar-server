@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 // import cookieParser from "cookie-parser";
- import contactRouter from "./routes/V1/adminRoutes/contactRoutes";
+//  import contactRouter from "./routes/V1/adminRoutes/contactRoutes";
 // import destinationRoutes from "./routes/V1/adminRoutes/destinationRoutes";
 // import travelPackageRoutes from "./routes/V1/adminRoutes/travelPackageRoutes";
 // import adminRoutes from "./routes/V1/adminRoutes/adminRoutes"
@@ -25,8 +25,8 @@ app.use(
   })
 );
 
-// app.use(express.json({ limit: '10mb' }));
-// app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // app.use(cookieParser());
 
 app.get("/", (req, res) => {
@@ -37,7 +37,7 @@ app.get("/hello",(req,res)=>{
   res.send("Welcome to the hello routes")
 })
 
- app.use("/V1", contactRouter);
+//  app.use("/V1", contactRouter);
 // app.use("/V1/destinations", destinationRoutes);
 // app.use("/V1", travelPackageRoutes);
 // app.use("/V1", adminRoutes);
