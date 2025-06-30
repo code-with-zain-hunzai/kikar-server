@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 // import cookieParser from "cookie-parser";
-//  import contactRouter from "./routes/V1/adminRoutes/contactRoutes";
+import contactRouter from "./routes/V1/adminRoutes/contactRoutes";
 // import destinationRoutes from "./routes/V1/adminRoutes/destinationRoutes";
 // import travelPackageRoutes from "./routes/V1/adminRoutes/travelPackageRoutes";
 // import adminRoutes from "./routes/V1/adminRoutes/adminRoutes"
@@ -18,8 +18,10 @@ app.use(
   cors({
     origin: ["https://kikar.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
     exposedHeaders: ["Set-Cookie"],
     maxAge: 86400
   })
@@ -37,7 +39,7 @@ app.get("/hello",(req,res)=>{
   res.send("Welcome to the hello routes")
 })
 
-//  app.use("/V1", contactRouter);
+ app.use("/V1", contactRouter);
 // app.use("/V1/destinations", destinationRoutes);
 // app.use("/V1", travelPackageRoutes);
 // app.use("/V1", adminRoutes);
