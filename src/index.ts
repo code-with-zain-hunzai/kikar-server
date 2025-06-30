@@ -1,15 +1,15 @@
-import app from "./app";
-import { connectDB } from './config/db';
+// import app from "./app";
+// import { connectDB } from './config/db';
 
-const PORT = process.env.PORT || 5000;
+// const PORT = process.env.PORT || 5000;
 
-connectDB();
+// connectDB();
 
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+// if (process.env.NODE_ENV !== "production") {
+//   app.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
+// }
 
 
 // src/index.ts
@@ -21,3 +21,9 @@ if (process.env.NODE_ENV !== "production") {
 // connectDB();
 // // Export the handler for Vercel
 // export default serverlessExpress({ app });
+
+import app from "../src/app";
+import { connectDB } from "../src/config/db";
+
+connectDB();
+export default app;
